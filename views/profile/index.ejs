@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+        margin:0px;
+    }        
+    .wrapper{
+        width:100%;
+        height:600px;
+        overflow: hidden;
+    }
+    .leftSide{
+        width:20%;
+        height:100%;
+
+        float:left;
+        text-align: center;
+    }
+    .center{
+        width:60%;
+        height:100%;
+        float:left;
+    }
+    .rightSide{
+        width:20%;
+        height:100%;
+        float:left;
+    }
+    
+    input[type=text],input[type=file],input[type=button]{
+        width:90%;
+        font-size:20px;     
+        margin:2px 2px 0px 0px       
+    }
+
+    .leftSide img{
+        width:80%;
+        text-align: center;
+    }
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+        width: 100%;
+        border: 1px solid #ddd;
+    }
+
+    th, td {
+        text-align: left;
+        padding: 16px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2
+    }  
+
+    .overEffect{
+        font-weight:bold;
+    }  
+    .outEffect{
+        font-weight:normal;
+    }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script>
+        var myApp = angular.module("myApp", []);
+        myApp.run(function($rootScope){
+            $rootScope.list=[];
+            $rootScope.obj={
+                name: "ddd",
+                phone1: "",
+                phone2: "",
+                phone3: ""
+            };
+
+             $rootScope.test=function(){
+                alert("test");
+            }
+ 
+        });
+
+        myApp.controller("registController", function ($scope, $http, $rootScope) {
+            $scope.regist = function () {
+                $http({
+                    url: "/profile/regist",
+                    method: 'POST',
+                    data: JSON.stringify({
+                        name: $scope.name,
+                        phone1: $scope.phone1,
+                        phone2: $scope.phone2,
+                        phone3: $scope.phone3
+                    }),
+                    
+                }).then(function (response) {
+                    if(response.data.result==0){
+                        alert("등록실패");
+                    }else{
+                        //목록 요청
+                        $scope.getList();                            
+                    }
+                });
+            }
+
+            $rootScope.getList=function(){
+                $http({
+                    url: "/profile/list",
+                    method: 'get'
+                }).then(function(response){
+                    if(response.data.result==0){
+                        alert("목록 조회 실패");
+                    }else{
+                        $rootScope.list.length=0;
+
+                        for(var i=0;i<response.data.length;i++){
+                            $rootScope.list.push(response.data[i]);                      
+                        }
+                    }
+                }, function(error_response){
+                    console.log(error_response);
+                });
+            }
+            
+            $rootScope.getList();
+        });
+
+        myApp.controller("detailController", function($scope,$http,$rootScope){
+            $scope.name=$rootScope.obj.name;            
+            $scope.phone1=$rootScope.obj.phone1;
+            $scope.phone2=$rootScope.obj.phone2;
+            $scope.phone3=$rootScope.obj.phone3;
+
+            $rootScope.getDetail=function(obj){
+                $scope.name=obj.name;
+                $scope.phone1=obj.phone1;
+                $scope.phone2=obj.phone2;
+                $scope.phone3=obj.phone3;
+                $scope.profile_id=obj.profile_id;
+            }   
+            
+            $scope.edit=function(){
+                $http({
+                    url: "/profile/edit",
+                    method: 'POST',
+                    data: JSON.stringify({
+                        name: $scope.name,
+                        phone1: $scope.phone1,
+                        phone2: $scope.phone2,
+                        phone3: $scope.phone3,
+                        profile_id:$scope.profile_id
+                    })
+                }).then(function (response) {
+                    if(response.data.result==0){
+                        alert("수정실패");
+                    }else{
+                        //목록 요청
+                        alert("수정완료");
+                        $rootScope.getList();                            
+                    }
+                }, function(error_response){
+                    console.log(error_response);
+                });
+            }
+
+            $scope.del=function(profile_id){
+                if(!confirm("삭제하시겠습니까?")){
+                    return;                        
+                }
+                $http({
+                    url:"/profile/delete",
+                    method:"get",
+                    params:{profile_id:profile_id}                 
+                }).then(function(response){
+                    if(response.data.result==0){
+                        alert("수정실패");
+                    }else{
+                        //목록 요청
+                        //alert("삭제완료");
+                        $rootScope.getList();                            
+                    }
+                }, function(error_response){
+                    console.log(error_response);
+                });
+            }
+
+        });
+    </script>
+</head>
+
+<body ng-app="myApp" >
+    <div class="wrapper">
+        <div class="leftSide" ng-controller="registController">
+            <input type="text" placeholder="이름 입력.." ng-model="name" />
+            <input type="text" placeholder="연락처" ng-model="phone1" />
+            <input type="text" placeholder="연락처" ng-model="phone2" />
+            <input type="text" placeholder="연락처" ng-model="phone3" />
+
+            <input type="button" value="등록" ng-click="regist()" />
+        </div>
+        <div class="center">
+            <div style="text-align: center">
+                <input type="text" placeholder="검색패턴을 지정하세요" ng-model="keyword"/>
+            </div>
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                </tr>
+                <tr ng-repeat="x in list | filter:keyword" ng-mouseover="effect='overEffect'" ng-mouseout="effect='outEffect'" class="{{effect}}" ng-click="getDetail(x)">
+                    <td>{{x.name}}</td>
+                    <td>{{x.phone1+"-"+x.phone2+"-"+x.phone3}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="rightSide" ng-controller="detailController">
+            <input type="text" placeholder="이름 입력.." ng-model="name" />
+            <input type="text" placeholder="연락처" ng-model="phone1" />
+            <input type="text" placeholder="연락처" ng-model="phone2" />
+            <input type="text" placeholder="연락처" ng-model="phone3" />
+            <input type="hidden" ng-model="profile_id" />
+
+            <input type="button" value="수정" ng-click="edit()" />
+            <input type="button" value="삭제" ng-click="del(profile_id)" />
+        </div>
+    </div>
+</body>
+
+</html>

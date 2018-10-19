@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script>
+        function regist(){
+            alert();
+            form1.submit();
+        }
+    </script>
+</head>
+
+<body>
+    <form name="form1" method="post"     action="/profile/regist">
+        <input type="text" name="name"      placeholder="이름 입력.." />
+        <input type="text" name="phone1"    placeholder="연락처" />
+        <input type="text" name="phone2"    placeholder="연락처" />
+        <input type="text" name="phone3"    placeholder="연락처" />
+        <input type="file" />
+        <img src="/images/zino.jpg">
+        <input type="button" value="등록" onClick="regist()" />
+    </form>
+</body>
+
+</html>
